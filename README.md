@@ -1,4 +1,4 @@
-# Contract Manager — LIT Hackathon 2.0
+# Contract Manager — LIT Hackathon
 
 An AI-powered contract intelligence web app: bulk-upload signed agreements (including scanned documents), automatically extract key terms with page-level citations, score confidence, detect conflicts (statutory, cross-contract, internal), and visualise deadlines on a calendar.
 
