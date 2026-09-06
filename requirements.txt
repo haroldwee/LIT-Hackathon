@@ -1,0 +1,10 @@
+flask
+flask-cors
+python-docx
+PyMuPDF
+pytesseract
+pillow
+pdfplumber
+spacy
+numpy
+requests
