@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Manager - LIT Hackathon</title>
+    <link rel="stylesheet" href="css/styles.css?v=11">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-left">
+                <i class="fas fa-file-contract logo-icon"></i>
+                <h1>Contract Manager</h1>
+            </div>
+            <div class="header-right">
+                <span class="badge" id="totalBadge">0 Contracts</span>
+                <button class="btn btn-outline" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </button>
+            <button class="tab-btn" data-tab="upload" onclick="switchTab('upload')">
+                <i class="fas fa-upload"></i> Upload Documents
+            </button>
+            <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">
+                <i class="fas fa-calendar-alt"></i> Calendar
+            </button>
+            <button class="tab-btn" data-tab="contracts" onclick="switchTab('contracts')">
+                <i class="fas fa-folder-open"></i> All Contracts
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <div id="dashboard-tab" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-file-contract"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="statTotal">0</span>
+                            <span class="stat-label">Total Contracts</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="statParties">0</span>
+                            <span class="stat-label">With Parties</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-calendar-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="statUpcoming">0</span>
+                            <span class="stat-label">Upcoming Deadlines</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="statUrgent">0</span>
+                            <span class="stat-label">Urgent (30 days)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-layer-group"></i> Contracts by Type</h3>
+                        </div>
+                        <div class="card-body" id="typeChart">
+                            <p class="placeholder">Load contracts to see breakdown</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+                        </div>
+                        <div class="card-body" id="recentActivity">
+                            <p class="placeholder">No recent activity</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="upload-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-cloud-upload-alt"></i> Upload Documents</h3>
+                        <p class="card-subtitle">Upload signed agreements: customer terms, supplier contracts, leases, NDAs, distribution agreements. Supports PDF (including scanned), DOCX, and TXT files.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-zone" id="dropZone">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <h3>Drag &amp; Drop files here</h3>
+                            <p class="upload-hint">Supports .pdf, .docx and .txt - you can drop up to 80 documents at once</p>
+                        </div>
+                        <div class="upload-progress" id="uploadProgress" style="display:none">
+                            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                            <span class="progress-text" id="progressText">Processing...</span>
+                        </div>
+                        <div class="upload-queue" id="uploadQueue"></div>
+                        <div class="upload-actions">
+                            <button class="btn btn-success" onclick="uploadFiles()" id="uploadBtn" disabled>
+                                <i class="fas fa-upload"></i> Upload & Process All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="calendar-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-calendar-alt"></i> Contract Calendar</h3>
+                        <div class="calendar-controls">
+                            <button class="btn btn-sm btn-outline" onclick="document.getElementById('calendar').fullCalendar('prev')"><i class="fas fa-chevron-left"></i></button>
+                            <button class="btn btn-sm btn-outline" onclick="document.getElementById('calendar').fullCalendar('today')">Today</button>
+                            <button class="btn btn-sm btn-outline" onclick="document.getElementById('calendar').fullCalendar('next')"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-table"></i> Contract Terms Matrix</h3>
+                        <div class="matrix-controls">
+                            <select id="matrixContractSelect" onchange="onMatrixContractChange()" class="filter-select">
+                                <option value="">Select contract…</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline" onclick="loadMatrix(true)" title="Re-run AI analysis"><i class="fas fa-sync-alt"></i> Re-analyze</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="matrixContainer">
+                        <p class="placeholder">Select a contract to view its extracted terms matrix</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-list-check"></i> Sorted Deliverables by Deadline</h3>
+                    </div>
+                    <div class="card-body" id="deliverablesList">
+                        <p class="placeholder">Upload contracts to see deliverables</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contracts-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-folder-open"></i> All Contracts</h3>
+                        <button class="btn btn-sm btn-outline" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters-bar">
+                            <select id="typeFilter" onchange="filterContracts()" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="NDAs">NDAs</option>
+                                <option value="Supplier Contract">Supplier Contract</option>
+                                <option value="Customer Terms">Customer Terms</option>
+                                <option value="Lease">Lease</option>
+                                <option value="Distribution Agreement">Distribution Agreement</option>
+                                <option value="Agreement">Agreement</option>
+                            </select>
+                            <select id="partyFilter" onchange="filterContracts()" class="filter-select">
+                                <option value="">All Parties</option>
+                            </select>
+                            <select id="issueFilter" onchange="filterContracts()" class="filter-select">
+                                <option value="">All Issues</option>
+                                <option value="law">Clash with the law</option>
+                                <option value="contracts">Clash with other contracts</option>
+                                <option value="internal">Internal clash</option>
+                                <option value="none">No issue</option>
+                            </select>
+                            <input type="text" id="searchInput" placeholder="Search contracts..." class="filter-input" oninput="filterContracts()">
+                        </div>
+                        <div class="contracts-grid" id="contractsGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" style="display:none">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Contract Details</h3>
+                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="js/app.js?v=11"></script>
+</body>
+</html>
+
+

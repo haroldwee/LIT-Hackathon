@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Source Viewer - Contract Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; min-height: 100vh; }
+        .top { background: linear-gradient(135deg, #4f46e5, #3730a3); color: #fff; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+        .top h2 { font-size: 1.1rem; font-weight: 600; }
+        .top .actions { display: flex; gap: 10px; }
+        .top a { color: #fff; text-decoration: none; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.4); border-radius: 8px; font-size: 0.85rem; font-weight: 600; }
+        .top a:hover { background: rgba(255,255,255,0.12); }
+        .meta { padding: 12px 28px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .chip { background: #eef2ff; color: #4f46e5; font-weight: 600; font-size: 0.8rem; padding: 4px 12px; border-radius: 12px; }
+        .quote { margin: 16px 28px; background: #fefce8; border-left: 4px solid #eab308; padding: 14px 18px; border-radius: 8px; font-style: italic; color: #713f12; line-height: 1.5; }
+        .imgwrap { margin: 0 auto 32px; max-width: 1000px; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); padding: 14px; }
+        .imgwrap img { width: 100%; height: auto; border-radius: 6px; display: block; }
+        .note { text-align: center; color: #64748b; font-size: 0.85rem; padding: 8px; }
+        .loading { text-align: center; color: #64748b; padding: 60px; }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <h2 id="title">Source Document</h2>
+        <div class="actions">
+            <a id="rawpdf" href="#" target="_blank">Open raw PDF</a>
+            <a href="#" onclick="window.close(); return false;">Close</a>
+        </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <div class="quote" id="quoteBox"></div>
+    <div class="imgwrap">
+        <div class="loading" id="loading">Rendering page…</div>
+        <img id="pageImg" alt="Page render" style="display:none" onload="document.getElementById('loading').style.display='none'; this.style.display='block'">
+        <div class="note" id="hlNote"></div>
+    </div>
+    <script>
+        const p = new URLSearchParams(location.search);
+        const file = p.get('file') || '';
+        const page = p.get('page') || '1';
+        const q = p.get('q') || '';
+        document.getElementById('title').textContent = p.get('name') || 'Source Document';
+        const chips = [`Page ${page}`];
+        if (p.get('para')) chips.push(`Paragraph ${p.get('para')}`);
+        if (p.get('clause')) chips.push(p.get('clause'));
+        document.getElementById('meta').innerHTML = chips.map(c => `<span class="chip">${c}</span>`).join('');
+        document.getElementById('quoteBox').textContent = q ? `"${q}"` : 'No quote recorded for this citation.';
+        document.getElementById('rawpdf').href = `/api/uploads/${encodeURIComponent(file)}#page=${page}`;
+        document.getElementById('pageImg').src = `/api/page_image/${encodeURIComponent(file)}/${page}?q=${encodeURIComponent(q)}`;
+        document.getElementById('hlNote').textContent = q ? 'The highlighted region marks the quoted text (when machine-readable on that page).' : '';
+    </script>
+</body>
+</html>
