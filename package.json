@@ -1,0 +1,9 @@
+{
+  "name": "contract-manager",
+  "version": "1.0.0",
+  "description": "Contract Manager - LIT Hackathon",
+  "scripts": {
+    "start": "cd backend && python app.py",
+    "frontend": "echo 'Frontend is served via Flask'"
+  }
+}
