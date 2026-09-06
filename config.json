@@ -1,0 +1,4 @@
+{
+  "openrouter_api_key": "INSERT",
+  "openrouter_model": "google/gemini-2.5-flash"
+}
